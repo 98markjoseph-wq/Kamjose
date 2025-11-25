@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KAMJOSE DR.</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 0; }
+    .center { display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .container { width: 90%; max-width: 800px; margin: auto; text-align: center; }
+    .hidden { display: none; }
+    h1 { color: #333; margin-bottom: 20px; }
+    input, button { padding: 10px; margin: 5px 0; font-size: 16px; width: 100%; box-sizing: border-box; }
+    button { cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+    button:hover { background: #0056b3; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+    .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
+    .popup { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; }
+    .popup-content { background:white; padding:20px; border-radius:10px; text-align:center; min-width: 250px; }
+    .progress-bar { width: 100%; background: #ddd; border-radius: 5px; margin-top: 10px; }
+    .progress { width: 0%; height: 20px; background: #28a745; border-radius: 5px; text-align: center; color: white; line-height: 20px; }
+    .balance { margin-top: 20px; font-weight: bold; color: #333; font-size: 18px; }
+  </style>
+</head>
+<body>
+
+<!-- Username Page -->
+<div id="usernamePage" class="center">
+  <div class="container">
+    <h1>Welcome to DR. Kamjose<br>Earn with Daktari</h1>
+    <input type="text" id="username" placeholder="Enter your username" />
+    <button onclick="start()">Continue</button>
+  </div>
+</div>
+
+<!-- Dashboard Page -->
+<div id="dashboardPage" class="hidden container">
+  <h1>Hello, <span id="displayUsername"></span></h1>
+  <div class="balance">Balance: Ksh <span id="balance">0</span></div>
+  <div class="cards" id="productCards"></div>
+</div>
+
+<!-- Popup -->
+<div id="popup" class="popup hidden">
+  <div class="popup-content" id="popupContent"></div>
+</div>
+
+<script>
+  const products = [
+    { name: "Intern", price: 0, daily: 60, B: 0, C:0, D:0 },
+    { name: "AS1", price: 850, daily: 67, B: 8.04, C: 4.02, D: 2.01 },
+    { name: "AS2", price: 2850, daily: 145, B: 17.40, C: 8.70, D: 4.35 },
+    { name: "AS3", price: 5900, daily: 300, B: 36.00, C: 18.00, D: 9.00 },
+    { name: "AS4", price: 11500, daily: 605, B: 72.60, C: 36.30, D: 18.15 },
+    { name: "AS5", price: 24000, daily: 1232, B: 147.84, C: 73.92, D: 36.96 },
+    { name: "AS6", price: 38000, daily: 1932, B: 231.84, C: 115.92, D: 57.96 },
+    { name: "AS7", price: 56000, daily: 2789, B: 334.68, C: 167.34, D: 83.67 },
+  ];
+
+  let username = "";
+  let balance = 0;
+
+  function start() {
+    const input = document.getElementById('username').value.trim();
+    if(!input) { alert("Please enter a username"); return; }
+    username = input;
+    document.getElementById('displayUsername').innerText = username;
+    document.getElementById('usernamePage').classList.add('hidden');
+    document.getElementById('dashboardPage').classList.remove('hidden');
+    showProducts();
+  }
+
+  function showProducts() {
+    const container = document.getElementById('productCards');
+    container.innerHTML = "";
+    products.forEach((p, index) => {
+      const card = document.createElement('div');
+      card.className = "card";
+      card.innerHTML = `
+        <h3>${p.name}</h3>
+        <p>Price: Ksh ${p.price}</p>
+        <p>Daily: Ksh ${p.daily}</p>
+        <p>B: ${p.B} | C: ${p.C} | D: ${p.D}</p>
+        <button onclick="selectProduct(${index})">${p.name === 'Intern' ? 'Do Task' : 'Join'}</button>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function selectProduct(index) {
+    const product = products[index];
+    if(product.name === "Intern") {
+      simulateDownload(product.daily);
+    } else {
+      askMpesa(product);
+    }
+  }
+
+  function askMpesa(product) {
+    const mpesa = prompt(`Enter your Mpesa number to join ${product.name}:`);
+    if(mpesa) {
+      showPopup(`Confirming Purchase of ${product.name}...`);
+      setTimeout(() => hidePopup(), 2000);
+    }
+  }
+
+  function simulateDownload(amount) {
+    showPopup(`
+      <p>Downloading...</p>
+      <div class="progress-bar"><div class="progress" id="progressBar">0%</div></div>
+    `);
+    let width = 0;
+    const progress = document.getElementById('progressBar');
+    const interval = setInterval(() => {
+      if(width >= 100) {
+        clearInterval(interval);
+        hidePopup();
+        balance += amount;
+        document.getElementById('balance').innerText = balance;
+        alert(`Task complete! You earned Ksh ${amount}`);
+      } else {
+        width += 2;
+        progress.style.width = width + '%';
+        progress.innerText = width + '%';
+      }
+    }, 50);
+  }
+
+  function showPopup(content) {
+    document.getElementById('popupContent').innerHTML = content;
+    document.getElementById('popup').classList.remove('hidden');
+  }
+
+  function hidePopup() {
+    document.getElementById('popup').classList.add('hidden');
+  }
+</script>
+
+</body>
+</html>
